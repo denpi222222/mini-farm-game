@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Enhanced Mini Farm Game</title>
+  <title>Улучшенная Мини Ферма</title>
   <style>
     body { margin: 0; overflow: hidden; }
     #inventory {
@@ -22,28 +22,37 @@
     #inventory li {
       margin: 5px 0;
     }
+    #day-night {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: white;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 10px;
+      font-family: Arial, sans-serif;
+    }
   </style>
 </head>
 <body>
   <div id="inventory"></div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/simplex-noise@2.4.0/dist/esm/simplex-noise.js"></script>
+  <div id="day-night"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/simplex-noise@3.0.0/dist/simplex-noise.umd.js"></script>
   <script>
-    // Initialize scene, camera, renderer
+    // Инициализация сцены, камеры и рендера
     const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0xbfd1e5, 0.1, 500); // Add fog for depth perception
 
     const camera = new THREE.PerspectiveCamera(
       75, window.innerWidth / window.innerHeight, 0.1, 1000
     );
-    camera.position.set(0, 50, 100);
+    camera.position.set(0, 25, 50);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     document.body.appendChild(renderer.domElement);
 
-    // Add ambient and directional light
+    // Добавление света
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
@@ -52,43 +61,34 @@
     dirLight.castShadow = true;
     scene.add(dirLight);
 
-    // Noise and constants
+    // Добавление земли
+    const groundGeo = new THREE.PlaneGeometry(1000, 1000);
+    const groundMat = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // Константы и переменные
     const simplex = new SimplexNoise();
     const CHUNK_SIZE = 16;
-    const WORLD_HEIGHT = 81;
 
-    // Block types
+    // Типы блоков
     const blockTypes = {
-      AIR: 0,
       GRASS: 1,
       DIRT: 2,
-      STONE: 3,
-      WATER: 4,
       WOOD: 5,
-      LEAVES: 6,
-      CROPS: 7,
       CROP_STAGE_1: 8,
       CROP_STAGE_2: 9,
       CROP_STAGE_3: 10,
       CROP_STAGE_4: 11,
     };
 
-    // Materials
+    // Материалы
     const blockMaterials = {
       [blockTypes.GRASS]: new THREE.MeshLambertMaterial({ color: 0x00ff00 }),
       [blockTypes.DIRT]: new THREE.MeshLambertMaterial({ color: 0x8B4513 }),
-      [blockTypes.STONE]: new THREE.MeshLambertMaterial({ color: 0x7f7f7f }),
-      [blockTypes.WATER]: new THREE.MeshLambertMaterial({
-        color: 0x1ca3ec,
-        transparent: true,
-        opacity: 0.6,
-      }),
       [blockTypes.WOOD]: new THREE.MeshLambertMaterial({ color: 0x8B4513 }),
-      [blockTypes.LEAVES]: new THREE.MeshLambertMaterial({ color: 0x00ff00 }),
-      [blockTypes.CROPS]: new THREE.MeshLambertMaterial({
-        color: 0xffff00,
-        side: THREE.DoubleSide,
-      }),
       [blockTypes.CROP_STAGE_1]: new THREE.MeshLambertMaterial({ color: 0x9ACD32 }),
       [blockTypes.CROP_STAGE_2]: new THREE.MeshLambertMaterial({ color: 0x7CFC00 }),
       [blockTypes.CROP_STAGE_3]: new THREE.MeshLambertMaterial({ color: 0x32CD32 }),
@@ -99,57 +99,48 @@
     let inventory = {
       seeds: 5,
       crops: 0,
-      wood: 0,
     };
-    let crops = []; // Array to hold crop objects
+    let crops = [];
 
-    // Generate terrain chunks
+    // Генерация чанков
     function generateChunk(chunkX, chunkZ) {
       const chunk = new THREE.Group();
-      const blockMap = new Map();
 
       for (let x = 0; x < CHUNK_SIZE; x++) {
         for (let z = 0; z < CHUNK_SIZE; z++) {
           const worldX = x + chunkX * CHUNK_SIZE;
           const worldZ = z + chunkZ * CHUNK_SIZE;
-          const height =
-            Math.floor(simplex.noise2D(worldX / 50, worldZ / 50) * 5 + 20);
+          const height = 1; // Плоская земля
 
-          for (let y = 0; y < height; y++) {
-            let blockType = blockTypes.DIRT;
-            if (y === height - 1) blockType = blockTypes.GRASS;
-            blockMap.set(`${x},${y},${z}`, blockType);
-
-            const blockGeo = new THREE.BoxGeometry(1, 1, 1);
-            const block = new THREE.Mesh(blockGeo, blockMaterials[blockType]);
-            block.position.set(worldX, y, worldZ);
-            block.receiveShadow = true;
-            block.castShadow = true;
-            chunk.add(block);
-          }
+          const blockGeo = new THREE.BoxGeometry(1, 1, 1);
+          const block = new THREE.Mesh(blockGeo, blockMaterials[blockTypes.GRASS]);
+          block.position.set(worldX, 0, worldZ);
+          block.receiveShadow = true;
+          block.castShadow = true;
+          chunk.add(block);
         }
       }
 
-      // Add house at the center chunk
+      // Добавление дома в центре
       if (chunkX === 0 && chunkZ === 0) buildHouse(chunk);
 
-      chunks.set(`${chunkX},${chunkZ}`, { chunk, blockMap });
+      chunks.set(`${chunkX},${chunkZ}`, chunk);
       scene.add(chunk);
     }
 
-    // Build a simple house
+    // Построение дома
     function buildHouse(chunk) {
       const house = new THREE.Group();
 
-      // Walls
+      // Стены
       const wallGeo = new THREE.BoxGeometry(1, 1, 1);
       for (let x = -2; x <= 2; x++) {
         for (let y = 0; y < 3; y++) {
           for (let z = -2; z <= 2; z++) {
             if (x === -2 || x === 2 || z === -2 || z === 2) {
-              if (!(x === 0 && z === -2 && y < 2)) { // Door space
+              if (!(x === 0 && z === -2 && y < 2)) {
                 const block = new THREE.Mesh(wallGeo, blockMaterials[blockTypes.WOOD]);
-                block.position.set(x, y + 20, z);
+                block.position.set(x, y + 1, z);
                 block.castShadow = true;
                 block.receiveShadow = true;
                 house.add(block);
@@ -159,28 +150,29 @@
         }
       }
 
-      // Roof
+      // Крыша
       const roofGeo = new THREE.ConeGeometry(3.5, 1, 4);
       const roof = new THREE.Mesh(roofGeo, blockMaterials[blockTypes.WOOD]);
-      roof.position.set(0, 23.5, 0);
+      roof.position.set(0, 4, 0);
       roof.rotation.y = Math.PI / 4;
       roof.castShadow = true;
       house.add(roof);
 
+      house.position.set(0, 0, 0);
       chunk.add(house);
     }
 
-    // Update inventory display
+    // Обновление инвентаря
     function updateInventoryDisplay() {
       const inventoryDiv = document.getElementById('inventory');
-      inventoryDiv.innerHTML = '<strong>Inventory:</strong><ul>';
+      inventoryDiv.innerHTML = '<strong>Инвентарь:</strong><ul>';
       for (const [item, count] of Object.entries(inventory)) {
         inventoryDiv.innerHTML += `<li>${item}: ${count}</li>`;
       }
       inventoryDiv.innerHTML += '</ul>';
     }
 
-    // Load visible chunks
+    // Загрузка видимых чанков
     function loadVisibleChunks(playerX, playerZ) {
       const chunkX = Math.floor(playerX / CHUNK_SIZE);
       const chunkZ = Math.floor(playerZ / CHUNK_SIZE);
@@ -194,7 +186,7 @@
       }
     }
 
-    // Player setup
+    // Настройка игрока
     const keys = {};
     const clock = new THREE.Clock();
 
@@ -206,10 +198,10 @@
       gravity: -30,
       canJump: false,
       onGround: false,
-      position: new THREE.Vector3(0, 50, 0),
+      position: new THREE.Vector3(0, 2, 10),
     };
 
-    // Movement handling
+    // Обработка движения
     function handleMovement(delta) {
       const moveDir = new THREE.Vector3();
       if (keys['w']) moveDir.z -= 1;
@@ -218,7 +210,6 @@
       if (keys['d']) moveDir.x += 1;
       moveDir.normalize();
 
-      // Apply movement
       const angle = camera.rotation.y;
       const sin = Math.sin(angle);
       const cos = Math.cos(angle);
@@ -226,37 +217,36 @@
       player.velocity.x = (moveDir.x * cos - moveDir.z * sin) * player.moveSpeed;
       player.velocity.z = (moveDir.z * cos + moveDir.x * sin) * player.moveSpeed;
 
-      // Apply gravity
       if (!player.onGround) {
         player.velocity.y += player.gravity * delta;
       }
 
-      // Update position
       const deltaPosition = player.velocity.clone().multiplyScalar(delta);
       player.position.add(deltaPosition);
 
-      // Simple ground collision
-      if (player.position.y <= 21) {
-        player.position.y = 21;
+      if (player.position.y <= 2) {
+        player.position.y = 2;
         player.velocity.y = 0;
         player.onGround = true;
       } else {
         player.onGround = false;
       }
 
-      // Update camera
       camera.position.copy(player.position).add(new THREE.Vector3(0, player.height, 0));
+
+      // Ограничение угла обзора по вертикали
+      camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
     }
 
-    // Plant crops
+    // Посадка культур
     function plantCrop() {
       if (inventory.seeds > 0) {
         const crop = {
           mesh: createCropMesh(),
-          growthStage: 0,
+          growthStage: 1,
           position: new THREE.Vector3(
             Math.round(player.position.x),
-            21.5,
+            1.5,
             Math.round(player.position.z)
           ),
           growthTime: 0,
@@ -270,7 +260,7 @@
       }
     }
 
-    // Create crop mesh
+    // Создание меша культуры
     function createCropMesh() {
       const cropGeo = new THREE.PlaneGeometry(0.5, 0.5);
       const cropMesh = new THREE.Mesh(cropGeo, blockMaterials[blockTypes.CROP_STAGE_1]);
@@ -279,7 +269,7 @@
       return cropMesh;
     }
 
-    // Harvest crops
+    // Сбор урожая
     function harvestCrop(cropIndex) {
       const crop = crops[cropIndex];
       scene.remove(crop.mesh);
@@ -288,7 +278,7 @@
       updateInventoryDisplay();
     }
 
-    // Animate crops (grow over time)
+    // Анимация роста культур
     function animateCrops(delta) {
       for (let i = crops.length - 1; i >= 0; i--) {
         const crop = crops[i];
@@ -298,7 +288,6 @@
           crop.growthTime = 0;
           crop.mesh.material = blockMaterials[blockTypes[`CROP_STAGE_${crop.growthStage}`]];
         }
-        // If fully grown, allow harvesting
         if (crop.growthStage === 4) {
           const distance = player.position.distanceTo(crop.position);
           if (distance < 2 && keys['f']) {
@@ -308,7 +297,17 @@
       }
     }
 
-    // Main animation loop
+    // Смена дня и ночи
+    let time = 0;
+    function updateDayNightCycle(delta) {
+      time += delta;
+      const dayNightDiv = document.getElementById('day-night');
+      const isDay = (Math.floor(time) % 20) < 10;
+      ambientLight.intensity = isDay ? 0.8 : 0.2;
+      dayNightDiv.innerText = isDay ? 'День' : 'Ночь';
+    }
+
+    // Главный цикл анимации
     function animate() {
       requestAnimationFrame(animate);
       const delta = clock.getDelta();
@@ -316,21 +315,20 @@
       loadVisibleChunks(player.position.x, player.position.z);
       handleMovement(delta);
       animateCrops(delta);
+      updateDayNightCycle(delta);
 
       renderer.render(scene, camera);
     }
 
-    // Event listeners
+    // Обработчики событий
     window.addEventListener('keydown', (event) => {
       keys[event.key.toLowerCase()] = true;
 
-      // Jump
       if (event.key === ' ' && player.onGround) {
         player.velocity.y = player.jumpSpeed;
         player.onGround = false;
       }
 
-      // Plant crop
       if (event.key.toLowerCase() === 'e') {
         plantCrop();
       }
@@ -340,13 +338,15 @@
       keys[event.key.toLowerCase()] = false;
     });
 
-    // Mouse controls
+    // Управление мышью
     let isMouseDown = false;
     let prevMouseX = 0;
+    let prevMouseY = 0;
 
     renderer.domElement.addEventListener('mousedown', (event) => {
       isMouseDown = true;
       prevMouseX = event.clientX;
+      prevMouseY = event.clientY;
     });
 
     renderer.domElement.addEventListener('mouseup', () => {
@@ -356,12 +356,15 @@
     renderer.domElement.addEventListener('mousemove', (event) => {
       if (isMouseDown) {
         const deltaX = event.clientX - prevMouseX;
+        const deltaY = event.clientY - prevMouseY;
         camera.rotation.y -= deltaX * 0.002;
+        camera.rotation.x -= deltaY * 0.002;
         prevMouseX = event.clientX;
+        prevMouseY = event.clientY;
       }
     });
 
-    // Resize handler
+    // Обработка изменения размера окна
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
