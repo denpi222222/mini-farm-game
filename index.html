@@ -76,6 +76,7 @@
         images[key].src = imageSources[key];
         promises.push(new Promise((resolve) => {
           images[key].onload = resolve;
+          images[key].onerror = () => console.error(`Ошибка загрузки изображения: ${imageSources[key]}`);
         }));
       }
       return Promise.all(promises);
@@ -139,6 +140,7 @@
       const rect = canvas.getBoundingClientRect();
       const x = Math.floor((event.clientX - rect.left) / TILE_SIZE);
       const y = Math.floor((event.clientY - rect.top) / TILE_SIZE);
+      console.log(`Клик по координатам x: ${x}, y: ${y}`);
 
       if (x >= 0 && x < FIELD_WIDTH && y >= 0 && y < FIELD_HEIGHT) {
         const tile = field[y][x];
