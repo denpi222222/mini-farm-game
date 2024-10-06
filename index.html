@@ -1,177 +1,357 @@
 <!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <title>Стратегия-Ферма</title>
-  <style>
-    body { margin: 0; overflow: hidden; }
-    canvas {
-      display: block;
-      background-color: #87CEEB; /* Небесно-голубой фон */
-    }
-    #ui {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      font-family: Arial, sans-serif;
-      color: #fff;
-    }
-    #ui button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-right: 10px;
-    }
-    #ui #inventory {
-      margin-top: 10px;
-    }
-  </style>
+<html><head><base href="https://websim.ai">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RatCoin Swap - Powered by Sui Blockchain</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Основные стили для body в стиле Sui Blockchain */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #0c0e1a;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            color: #e4e8ff;
+            flex-direction: column;
+            padding-top: 30px;
+        }
+        
+        /* Стили для основного контейнера и меню */
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        /* Меню навигации */
+        .navigation {
+            width: 100%;
+            background-color: #1a1f3e;
+            padding: 16px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-item {
+            color: #e4e8ff;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-item:hover {
+            color: #4a90e2;
+        }
+
+        /* Стили для основного контейнера свапа */
+        .swap-container {
+            background-color: #1a1f3e;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            padding: 32px;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        /* Стили для заголовка свапа */
+        .swap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .swap-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        
+        .settings-icon {
+            cursor: pointer;
+            font-size: 22px;
+            color: #9fa6d1;
+        }
+        
+        /* Стили для полей ввода токенов */
+        .token-input {
+            background-color: #2a2f4a;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+        
+        .token-input input {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            width: 100%;
+            outline: none;
+            color: #e4e8ff;
+        }
+        
+        /* Стили для селектора токенов */
+        .token-selector {
+            display: flex;
+            align-items: center;
+            background-color: #1a1f3e;
+            border-radius: 12px;
+            padding: 8px 16px;
+            cursor: pointer;
+            margin-top: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .token-selector img {
+            width: 28px;
+            height: 28px;
+            margin-right: 12px;
+        }
+        
+        /* Стили для кнопки свапа */
+        .swap-button {
+            background-color: #4a90e2;
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .swap-button:hover {
+            background-color: #357abf;
+        }
+        
+        /* Стили для деталей свапа */
+        .swap-details {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #9fa6d1;
+        }
+        
+        .swap-rate {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        /* Стили для отображения баланса */
+        .balance {
+            position: absolute;
+            right: 16px;
+            top: 16px;
+            font-size: 14px;
+            color: #9fa6d1;
+        }
+        
+        /* Стили для кнопки переключения направления свапа */
+        .swap-direction {
+            display: flex;
+            justify-content: center;
+            margin: 12px 0;
+        }
+        
+        .swap-direction-button {
+            background-color: #1a1f3e;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: transform 0.3s, background-color 0.3s;
+            color: #4a90e2;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .swap-direction-button:hover {
+            transform: rotate(180deg);
+            background-color: #2a2f4a;
+        }
+
+        /* Стили для кнопки подключения кошелька */
+        .connect-wallet-button {
+            background-color: #ffa500;
+            color: #0f1217;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 18px;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-bottom: 24px;
+        }
+        
+        .connect-wallet-button:hover {
+            background-color: #e69500;
+        }
+
+        /* Стили для панели управления ордерами */
+        .order-management {
+            background-color: #1a1f3e;
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .order-management-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 20px;
+        }
+
+        .order-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .order-item {
+            background-color: #2a2f4a;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .order-item span {
+            font-size: 14px;
+            color: #e4e8ff;
+        }
+
+        .cancel-order-button {
+            background-color: #e74c3c;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .cancel-order-button:hover {
+            background-color: #c0392b;
+        }
+    </style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="800" height="600"></canvas>
-  <div id="ui">
-    <button id="plantButton">Посадить семена</button>
-    <button id="harvestButton">Собрать урожай</button>
-    <div id="inventory">
-      <p>Семена: <span id="seedsCount">10</span></p>
-      <p>Урожай: <span id="cropsCount">0</span></p>
+    <!-- Навигационное меню -->
+    <div class="navigation">
+        <div class="nav-menu">
+            <a href="#" class="nav-item">Home</a>
+            <a href="#" class="nav-item">Swap</a>
+            <a href="#" class="nav-item">Liquidity</a>
+            <a href="#" class="nav-item">Orders</a>
+            <a href="#" class="nav-item">Analytics</a>
+            <a href="#" class="nav-item">Settings</a>
+        </div>
     </div>
-  </div>
-  <script>
-    // Настройка Canvas
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
 
-    // Размеры поля
-    const TILE_SIZE = 40;
-    const FIELD_WIDTH = 10;
-    const FIELD_HEIGHT = 10;
+    <div class="container">
+        <div class="swap-container">
+            <button class="connect-wallet-button" onclick="connectMartianWallet()">Connect Wallet</button>
+            <div class="swap-header">
+                <span class="swap-title">Swap Tokens</span>
+                <span class="settings-icon" onclick="openSettings()">⚙️</span>
+            </div>
+            <div class="token-input">
+                <input type="number" placeholder="0.0" id="fromAmount" min="0" step="0.01">
+                <div class="token-selector" onclick="selectToken('from')">
+                    <img src="https://example.com/rat-icon.png" alt="RatCoin">
+                    <span id="fromToken">RAT</span>
+                </div>
+                <div class="balance" id="fromBalance">Balance: 1000 RAT</div>
+            </div>
+            <div class="swap-direction">
+                <button class="swap-direction-button" onclick="switchTokens()">↕️</button>
+            </div>
+            <div class="token-input">
+                <input type="number" placeholder="0.0" id="toAmount" min="0" step="0.01">
+                <div class="token-selector" onclick="selectToken('to')">
+                    <img src="https://example.com/sui-icon.png" alt="SUI">
+                    <span id="toToken">SUI</span>
+                </div>
+                <div class="balance" id="toBalance">Balance: 5000 SUI</div>
+            </div>
+            <button class="swap-button" onclick="performSwap()">Swap Now</button>
+            <div class="swap-details">
+                <div class="swap-rate">
+                    <span>Exchange Rate</span>
+                    <span id="exchangeRate">1 RAT = 0.00023 SUI</span>
+                </div>
+                <div class="swap-rate">
+                    <span>Network Fee</span>
+                    <span id="networkFee">0.1 SUI</span>
+                </div>
+            </div>
+        </div>
 
-    // Игровые переменные
-    let seeds = 10;
-    let crops = 0;
+        <!-- Панель управления ордерами -->
+        <div class="order-management">
+            <div class="order-management-title">Order Management</div>
+            <ul class="order-list" id="orderList"></ul>
+        </div>
+    </div>
 
-    const field = [];
-    for (let y = 0; y < FIELD_HEIGHT; y++) {
-      field[y] = [];
-      for (let x = 0; x < FIELD_WIDTH; x++) {
-        field[y][x] = {
-          stage: 0, // 0 - пусто, 1-3 - рост растения, 4 - готово к сбору
-          growthTime: 0,
+    <script src="https://cdn.jsdelivr.net/npm/@martianwallet/sdk"></script>
+    <script>
+        // Глобальные переменные для хранения текущих токенов и их балансов
+        let currentFromToken = 'RAT';
+        let currentToToken = 'SUI';
+        const balances = {
+            RAT: 1000,
+            SUI: 5000
         };
-      }
-    }
 
-    // Загрузка изображений
-    const images = {};
-    const loadImages = () => {
-      const imageSources = {
-        soil: 'https://i.imgur.com/6RLzxWe.png', // Изображение земли
-        sprout: 'https://i.imgur.com/8u1j1HU.png', // Росток
-        plant: 'https://i.imgur.com/1f9Dk5z.png', // Растение
-        harvest: 'https://i.imgur.com/WQ3ZJUA.png', // Готовое к сбору
-      };
-      const promises = [];
-      for (const key in imageSources) {
-        images[key] = new Image();
-        images[key].src = imageSources[key];
-        promises.push(new Promise((resolve) => {
-          images[key].onload = resolve;
-          images[key].onerror = () => console.error(`Ошибка загрузки изображения: ${imageSources[key]}`);
-        }));
-      }
-      return Promise.all(promises);
-    };
+        let provider;
+        let userAddress;
 
-    // Обновление интерфейса
-    const updateUI = () => {
-      document.getElementById('seedsCount').innerText = seeds;
-      document.getElementById('cropsCount').innerText = crops;
-    };
+        const orders = [];
 
-    // Рисование поля
-    const drawField = () => {
-      for (let y = 0; y < FIELD_HEIGHT; y++) {
-        for (let x = 0; x < FIELD_WIDTH; x++) {
-          const tile = field[y][x];
-          ctx.drawImage(images.soil, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-          if (tile.stage > 0) {
-            let image;
-            if (tile.stage === 1) image = images.sprout;
-            else if (tile.stage === 2) image = images.plant;
-            else if (tile.stage >= 3) image = images.harvest;
-            ctx.drawImage(image, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-          }
-          ctx.strokeStyle = '#000';
-          ctx.strokeRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-        }
-      }
-    };
-
-    // Обновление роста растений
-    const updatePlants = (deltaTime) => {
-      for (let y = 0; y < FIELD_HEIGHT; y++) {
-        for (let x = 0; x < FIELD_WIDTH; x++) {
-          const tile = field[y][x];
-          if (tile.stage > 0 && tile.stage < 3) {
-            tile.growthTime += deltaTime;
-            if (tile.growthTime >= 5) {
-              tile.stage++;
-              tile.growthTime = 0;
+        // Функция для подключения кошелька Martian
+        async function connectMartianWallet() {
+            if (window.martian) {
+                try {
+                    const response = await window.martian.connect();
+                    userAddress = response.address;
+                    alert(`Connected wallet: ${userAddress}`);
+                } catch (error) {
+                    alert('Failed to connect wallet: ' + error.message);
+                }
+            } else {
+                alert('Martian Wallet is not installed. Please install it to connect your wallet.');
             }
-          }
         }
-      }
-    };
-
-    // Основной цикл игры
-    let lastTime = 0;
-    const gameLoop = (time = 0) => {
-      const deltaTime = (time - lastTime) / 1000;
-      lastTime = time;
-
-      updatePlants(deltaTime);
-      drawField();
-
-      requestAnimationFrame(gameLoop);
-    };
-
-    // Обработчики событий
-    canvas.addEventListener('click', (event) => {
-      const rect = canvas.getBoundingClientRect();
-      const x = Math.floor((event.clientX - rect.left) / TILE_SIZE);
-      const y = Math.floor((event.clientY - rect.top) / TILE_SIZE);
-      console.log(`Клик по координатам x: ${x}, y: ${y}`);
-
-      if (x >= 0 && x < FIELD_WIDTH && y >= 0 && y < FIELD_HEIGHT) {
-        const tile = field[y][x];
-        if (tile.stage === 0 && seeds > 0) {
-          tile.stage = 1;
-          seeds--;
-          updateUI();
-        } else if (tile.stage >= 3) {
-          tile.stage = 0;
-          crops++;
-          updateUI();
-        }
-      }
-    });
-
-    // Кнопки интерфейса
-    document.getElementById('plantButton').addEventListener('click', () => {
-      seeds += 5;
-      updateUI();
-    });
-
-    document.getElementById('harvestButton').addEventListener('click', () => {
-      crops = 0;
-      updateUI();
-    });
-
-    // Запуск игры
-    loadImages().then(() => {
-      updateUI();
-      requestAnimationFrame(gameLoop);
-    });
-  </script>
-</body>
-</html>
+        
+        // Функция для выполнения свапа
+        async function performSwap() {
+            const fromAmount = document.getElementById('fromAmount').value;
+            const toAmount = document.getElementById('toAmount').value;
+            
+            if (!fromAmount
