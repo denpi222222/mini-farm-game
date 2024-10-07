@@ -1,81 +1,106 @@
 <!DOCTYPE html>
-<html><head><base href="https://websim.ai">
+<html>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RatCoin Swap - Powered by Sui Blockchain</title>
+    <title>Simple Trade - Powered by Sui Blockchain</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@suiet/wallet-sdk@latest"></script>
     <style>
         /* Основные стили для body в стиле Sui Blockchain */
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #0c0e1a;
+            background-color: #1d1e26;
             margin: 0;
             padding: 0;
             display: flex;
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
-            color: #e4e8ff;
+            color: #ffffff;
             flex-direction: column;
-            padding-top: 30px;
         }
         
         /* Стили для основного контейнера и меню */
         .container {
             display: flex;
             flex-direction: column;
-            gap: 32px;
+            gap: 20px;
             align-items: center;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1400px;
+            padding: 20px;
         }
 
-        /* Меню навигации */
+        /* Навигационное меню */
         .navigation {
             width: 100%;
-            background-color: #1a1f3e;
-            padding: 16px 0;
+            background-color: #2b2c36;
+            padding: 20px 0;
             display: flex;
             justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
         .nav-menu {
             display: flex;
-            gap: 24px;
+            gap: 40px;
         }
 
         .nav-item {
-            color: #e4e8ff;
+            color: #e5e7eb;
             text-decoration: none;
-            font-size: 18px;
-            font-weight: 500;
+            font-size: 20px;
+            font-weight: 600;
             transition: color 0.3s;
         }
 
         .nav-item:hover {
-            color: #4a90e2;
+            color: #38bdf8;
         }
 
-        /* Стили для основного контейнера свапа */
-        .swap-container {
-            background-color: #1a1f3e;
+        /* Слоган и логотип */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 48px;
+            font-weight: 700;
+            color: #facc15;
+            margin-bottom: 10px;
+        }
+
+        .slogan {
+            font-size: 20px;
+            color: #e5e7eb;
+            font-style: italic;
+        }
+
+        /* Стили для основного контейнера торгов */
+        .trade-container {
+            background-color: #2b2c36;
             border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
             padding: 32px;
             width: 100%;
-            max-width: 600px;
+            max-width: 900px;
         }
         
-        /* Стили для заголовка свапа */
-        .swap-header {
+        /* Стили для заголовка торговли */
+        .trade-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
         
-        .swap-title {
-            font-size: 24px;
+        .trade-title {
+            font-size: 28px;
             font-weight: 700;
             color: #ffffff;
         }
@@ -83,275 +108,229 @@
         .settings-icon {
             cursor: pointer;
             font-size: 22px;
-            color: #9fa6d1;
+            color: #94a3b8;
+            transition: color 0.3s;
+        }
+
+        .settings-icon:hover {
+            color: #38bdf8;
         }
         
-        /* Стили для полей ввода токенов */
-        .token-input {
-            background-color: #2a2f4a;
+        /* Стили для поиска пула */
+        .pool-search {
+            background-color: #3b3c47;
             border-radius: 12px;
             padding: 16px;
             margin-bottom: 16px;
-            position: relative;
-        }
-        
-        .token-input input {
-            background: transparent;
-            border: none;
-            font-size: 20px;
-            width: 100%;
-            outline: none;
-            color: #e4e8ff;
-        }
-        
-        /* Стили для селектора токенов */
-        .token-selector {
             display: flex;
             align-items: center;
-            background-color: #1a1f3e;
-            border-radius: 12px;
-            padding: 8px 16px;
-            cursor: pointer;
-            margin-top: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
-        
-        .token-selector img {
-            width: 28px;
-            height: 28px;
-            margin-right: 12px;
-        }
-        
-        /* Стили для кнопки свапа */
-        .swap-button {
-            background-color: #4a90e2;
-            color: #ffffff;
+
+        .pool-search input {
+            background: transparent;
             border: none;
-            border-radius: 12px;
-            padding: 16px;
             font-size: 18px;
-            font-weight: 700;
             width: 100%;
-            cursor: pointer;
-            transition: background-color 0.3s;
+            outline: none;
+            color: #e5e7eb;
+            padding-left: 8px;
         }
         
-        .swap-button:hover {
-            background-color: #357abf;
-        }
-        
-        /* Стили для деталей свапа */
-        .swap-details {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #9fa6d1;
-        }
-        
-        .swap-rate {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-        
-        /* Стили для отображения баланса */
-        .balance {
-            position: absolute;
-            right: 16px;
-            top: 16px;
-            font-size: 14px;
-            color: #9fa6d1;
-        }
-        
-        /* Стили для кнопки переключения направления свапа */
-        .swap-direction {
-            display: flex;
-            justify-content: center;
-            margin: 12px 0;
-        }
-        
-        .swap-direction-button {
-            background-color: #1a1f3e;
-            border: none;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            font-size: 20px;
-            cursor: pointer;
-            transition: transform 0.3s, background-color 0.3s;
-            color: #4a90e2;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-        
-        .swap-direction-button:hover {
-            transform: rotate(180deg);
-            background-color: #2a2f4a;
+        .search-icon {
+            color: #94a3b8;
+            font-size: 24px;
         }
 
-        /* Стили для кнопки подключения кошелька */
-        .connect-wallet-button {
-            background-color: #ffa500;
-            color: #0f1217;
-            border: none;
-            border-radius: 12px;
-            padding: 14px;
-            font-size: 18px;
-            font-weight: 700;
-            width: 100%;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin-bottom: 24px;
-        }
-        
-        .connect-wallet-button:hover {
-            background-color: #e69500;
-        }
-
-        /* Стили для панели управления ордерами */
-        .order-management {
-            background-color: #1a1f3e;
-            border-radius: 16px;
-            padding: 24px;
-            width: 100%;
-            max-width: 600px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .order-management-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 20px;
-        }
-
-        .order-list {
+        /* Стили для пула ликвидности */
+        .pool-list {
             list-style: none;
             padding: 0;
         }
 
-        .order-item {
-            background-color: #2a2f4a;
-            padding: 12px;
+        .pool-item {
+            background-color: #3b3c47;
+            padding: 14px;
             border-radius: 12px;
             margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s, background-color 0.3s;
         }
 
-        .order-item span {
+        .pool-item:hover {
+            transform: scale(1.02);
+            background-color: #4b4c58;
+        }
+
+        .pool-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pool-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #ffffff;
+            border-radius: 50%;
+        }
+
+        .pool-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pool-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .pool-subtitle {
             font-size: 14px;
-            color: #e4e8ff;
+            color: #cbd5e1;
         }
 
-        .cancel-order-button {
-            background-color: #e74c3c;
+        .pool-volume {
+            font-size: 16px;
+            color: #facc15;
+            font-weight: 700;
+        }
+
+        /* Стили для кнопки подключения кошелька */
+        .connect-wallet-button {
+            background-color: #38bdf8;
             color: #ffffff;
             border: none;
-            border-radius: 8px;
-            padding: 8px 16px;
-            font-size: 14px;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 18px;
+            font-weight: 600;
             cursor: pointer;
             transition: background-color 0.3s;
         }
 
-        .cancel-order-button:hover {
-            background-color: #c0392b;
+        .connect-wallet-button:hover {
+            background-color: #0284c7;
         }
     </style>
 </head>
 <body>
+    <!-- Логотип и слоган -->
+    <div class="header">
+        <div class="logo">Simple Trade</div>
+        <div class="slogan">"Trade simply and efficiently on Sui Blockchain"</div>
+    </div>
+
     <!-- Навигационное меню -->
     <div class="navigation">
         <div class="nav-menu">
-            <a href="#" class="nav-item">Home</a>
-            <a href="#" class="nav-item">Swap</a>
-            <a href="#" class="nav-item">Liquidity</a>
-            <a href="#" class="nav-item">Orders</a>
-            <a href="#" class="nav-item">Analytics</a>
-            <a href="#" class="nav-item">Settings</a>
+            <a href="#" onclick="navigateToSection('home')" class="nav-item">Home</a>
+            <a href="#" onclick="navigateToSection('trade')" class="nav-item">Trade</a>
+            <a href="#" onclick="navigateToSection('pools')" class="nav-item">Pools</a>
+            <a href="#" onclick="navigateToSection('portfolio')" class="nav-item">Portfolio</a>
+            <a href="#" onclick="navigateToSection('analytics')" class="nav-item">Analytics</a>
+            <a href="#" onclick="navigateToSection('settings')" class="nav-item">Settings</a>
         </div>
     </div>
 
     <div class="container">
-        <div class="swap-container">
-            <button class="connect-wallet-button" onclick="connectMartianWallet()">Connect Wallet</button>
-            <div class="swap-header">
-                <span class="swap-title">Swap Tokens</span>
+        <!-- Кнопка подключения кошелька -->
+        <button class="connect-wallet-button" onclick="connectSuiWallet()">Connect Sui Wallet</button>
+
+        <!-- Панель поиска пула -->
+        <div id="pools" class="trade-container">
+            <div class="trade-header">
+                <span class="trade-title">Find Liquidity Pools</span>
                 <span class="settings-icon" onclick="openSettings()">⚙️</span>
             </div>
-            <div class="token-input">
-                <input type="number" placeholder="0.0" id="fromAmount" min="0" step="0.01">
-                <div class="token-selector" onclick="selectToken('from')">
-                    <img src="https://example.com/rat-icon.png" alt="RatCoin">
-                    <span id="fromToken">RAT</span>
-                </div>
-                <div class="balance" id="fromBalance">Balance: 1000 RAT</div>
+            <div class="pool-search">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Search by token name, symbol, or mint" id="poolSearch">
             </div>
-            <div class="swap-direction">
-                <button class="swap-direction-button" onclick="switchTokens()">↕️</button>
-            </div>
-            <div class="token-input">
-                <input type="number" placeholder="0.0" id="toAmount" min="0" step="0.01">
-                <div class="token-selector" onclick="selectToken('to')">
-                    <img src="https://example.com/sui-icon.png" alt="SUI">
-                    <span id="toToken">SUI</span>
-                </div>
-                <div class="balance" id="toBalance">Balance: 5000 SUI</div>
-            </div>
-            <button class="swap-button" onclick="performSwap()">Swap Now</button>
-            <div class="swap-details">
-                <div class="swap-rate">
-                    <span>Exchange Rate</span>
-                    <span id="exchangeRate">1 RAT = 0.00023 SUI</span>
-                </div>
-                <div class="swap-rate">
-                    <span>Network Fee</span>
-                    <span id="networkFee">0.1 SUI</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Панель управления ордерами -->
-        <div class="order-management">
-            <div class="order-management-title">Order Management</div>
-            <ul class="order-list" id="orderList"></ul>
+            <ul class="pool-list">
+                <li class="pool-item">
+                    <div class="pool-info">
+                        <div class="pool-icon"></div>
+                        <div class="pool-details">
+                            <span class="pool-name">SUI - USDC</span>
+                            <span class="pool-subtitle">68 Pools Available</span>
+                        </div>
+                    </div>
+                    <span class="pool-volume">TVL: $6,189,734.53</span>
+                </li>
+                <li class="pool-item">
+                    <div class="pool-info">
+                        <div class="pool-icon"></div>
+                        <div class="pool-details">
+                            <span class="pool-name">JUP - SUI</span>
+                            <span class="pool-subtitle">33 Pools Available</span>
+                        </div>
+                    </div>
+                    <span class="pool-volume">TVL: $5,394,043.91</span>
+                </li>
+                <li class="pool-item">
+                    <div class="pool-info">
+                        <div class="pool-icon"></div>
+                        <div class="pool-details">
+                            <span class="pool-name">SUI - RAT</span>
+                            <span class="pool-subtitle">27 Pools Available</span>
+                        </div>
+                    </div>
+                    <span class="pool-volume">TVL: $1,622,933.85</span>
+                </li>
+                <li class="pool-item">
+                    <div class="pool-info">
+                        <div class="pool-icon"></div>
+                        <div class="pool-details">
+                            <span class="pool-name">RAT - USDC</span>
+                            <span class="pool-subtitle">13 Pools Available</span>
+                        </div>
+                    </div>
+                    <span class="pool-volume">TVL: $252,832.98</span>
+                </li>
+            </ul>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@martianwallet/sdk"></script>
     <script>
-        // Глобальные переменные для хранения текущих токенов и их балансов
-        let currentFromToken = 'RAT';
-        let currentToToken = 'SUI';
-        const balances = {
-            RAT: 1000,
-            SUI: 5000
-        };
-
-        let provider;
-        let userAddress;
-
-        const orders = [];
-
-        // Функция для подключения кошелька Martian
-        async function connectMartianWallet() {
-            if (window.martian) {
-                try {
-                    const response = await window.martian.connect();
-                    userAddress = response.address;
-                    alert(`Connected wallet: ${userAddress}`);
-                } catch (error) {
-                    alert('Failed to connect wallet: ' + error.message);
-                }
-            } else {
-                alert('Martian Wallet is not installed. Please install it to connect your wallet.');
+        // Подключение к Sui Wallet
+        async function connectSuiWallet() {
+            try {
+                const wallet = new SuiWallet();
+                const response = await wallet.connect();
+                alert('Connected to wallet: ' + response.address);
+            } catch (error) {
+                alert('Failed to connect wallet: ' + error.message);
             }
         }
-        
-        // Функция для выполнения свапа
-        async function performSwap() {
-            const fromAmount = document.getElementById('fromAmount').value;
-            const toAmount = document.getElementById('toAmount').value;
-            
-            if (!fromAmount
+
+        // Функция для навигации по разделам
+        function navigateToSection(sectionId) {
+            const sections = ['trade', 'pools', 'portfolio', 'analytics', 'settings'];
+            sections.forEach(section => {
+                const element = document.getElementById(section);
+                if (element) {
+                    element.style.display = 'none';
+                }
+            });
+            const targetElement = document.getElementById(sectionId);
+            if (targetElement) {
+                targetElement.style.display = 'block';
+            }
+        }
+
+        // Функция для открытия настроек
+        function openSettings() {
+            alert('Settings clicked');
+        }
+
+        // По умолчанию отображаем секцию "Pools"
+        window.onload = function() {
+            navigateToSection('pools');
+        }
+    </script>
+</body>
+</html>
